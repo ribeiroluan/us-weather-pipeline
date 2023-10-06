@@ -194,6 +194,7 @@ pyrightconfig.json
 
 # Personal
 data-with-luan-credentials.json
+.gitignore
 
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
