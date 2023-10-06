@@ -26,7 +26,7 @@ class GetRealTimeWeather:
         
     def get_cities(self) -> list:
         df = pd.read_csv("uscities.csv", sep=";", encoding='latin-1')
-        return df[df["state_id"] == "CA"].drop_duplicates(subset="location", keep="first", inplace=True)
+        return df[df["state_id"] == "CA"].drop_duplicates(subset="latlon")
         
     def get_row_values(self, data:dict) -> dict:
         return {
@@ -46,14 +46,14 @@ class GetRealTimeWeather:
             }
     
     def append_row_to_dataframe(self, df:pd.DataFrame, new_row:dict) -> None:
+        df.loc[len(df)] = new_row
+
+    def export_df_as_csv(self, df:pd.DataFrame) -> None:
         filename = datetime.today().strftime('%Y%m%d%H%M%S')
         df.to_csv(f"weather_info_{filename}.csv", index=False)
         logger.info(f"{filename} was written as a .csv file")
-
-    def export_df_as_csv(self, df:pd.DataFrame):
-        df.to_csv(f"weather_info_{datetime.today().strftime('%Y%m%d%H%M%S')}.csv", index=False)
          
-    def extract_weather_data(self):
+    def extract_weather_data(self) -> pd.DataFrame:
         start = time.time()
 
         for city, latlon in zip(self.get_cities()["city"], self.get_cities()["latlon"]):
@@ -78,7 +78,7 @@ class LoadToBQ:
     def _get_bq_credentials(self):
         return service_account.Credentials.from_service_account_file('data-with-luan-credentials.json')
 
-    def load(self):
+    def load(self) -> None:
         self.data.to_gbq(
             destination_table="us_weather_pipeline.current_us_weather", 
             project_id="data-with-luan", 
@@ -91,4 +91,3 @@ if __name__ == '__main__':
     updated_weather = GetRealTimeWeather()
     data = updated_weather.extract_weather_data()
     LoadToBQ(data).load()
-
