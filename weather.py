@@ -4,15 +4,22 @@ import logging
 from datetime import datetime
 from google.cloud import bigquery
 from google.oauth2 import service_account
+from os import getenv
+from dotenv import load_dotenv
 
+#Initializing logger
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+#Load API Key
+load_dotenv()
+API_KEY = getenv('KEY')
 
 class GetRealTimeWeather:
 
     def __init__(self):
         self.url = "https://weatherapi-com.p.rapidapi.com/current.json"
-        self.headers = {"X-RapidAPI-Key": "240f32eceemshe2854e598a3bd6ep10ca07jsne8ed3b259b6a",
+        self.headers = {"X-RapidAPI-Key": API_KEY,
                         "X-RapidAPI-Host": "weatherapi-com.p.rapidapi.com"}
         self.weather = pd.DataFrame(columns=["city", "region", "country", "location", "localtime", "last_updated", "temp_c", "temp_f", "wind_kph", "wind_mph", "precip_mm", "precip_in", "condition"])
         
