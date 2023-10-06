@@ -26,34 +26,37 @@ class GetRealTimeWeather:
         
     def get_cities(self) -> list:
         df = pd.read_csv("uscities.csv", sep=";", encoding='latin-1')
-        return df[df["state_id"] == "CA"].drop_duplicates(subset="location", keep="first", inplace=True)
+        return df[df["state_id"] == "NY"]
         
     def get_row_values(self, data:dict) -> dict:
         return {
-                "city": data["location"]["name"], 
-                "region": data["location"]["region"],
-                "country": data["location"]["country"],
-                "location":str(data["location"]["lat"]) + ',' + str(data["location"]["lon"]),
-                "localtime":data["location"]["localtime"],
-                "last_updated":data["current"]["last_updated"],
-                "temp_c":data["current"]["temp_c"], 
-                "temp_f":data["current"]["temp_f"],
-                "wind_kph":data["current"]["wind_kph"],
-                "wind_mph":data["current"]["wind_mph"],
-                "precip_mm":data["current"]["precip_mm"],
-                "precip_in":data["current"]["precip_in"],
-                "condition":data["current"]["condition"]["text"]
-            }
-    
+            "city": data["location"]["name"], 
+            "region": data["location"]["region"],
+            "country": data["location"]["country"],
+            "location":str(data["location"]["lat"]) + ',' + str(data["location"]["lon"]),
+            "localtime":data["location"]["localtime"],
+            "last_updated":data["current"]["last_updated"],
+            "temp_c":data["current"]["temp_c"], 
+            "temp_f":data["current"]["temp_f"],
+            "wind_kph":data["current"]["wind_kph"],
+            "wind_mph":data["current"]["wind_mph"],
+            "precip_mm":data["current"]["precip_mm"],
+            "precip_in":data["current"]["precip_in"],
+            "condition":data["current"]["condition"]["text"]
+        }
+
+    def clean_dataframe(self, df:pd.DataFrame) -> pd.DataFrame:
+        return df.drop_duplicates(subset="location", keep="first", inplace=True)
+
     def append_row_to_dataframe(self, df:pd.DataFrame, new_row:dict) -> None:
+        df.loc[len(df)] = new_row
+
+    def export_df_as_csv(self, df:pd.DataFrame) -> None:
         filename = datetime.today().strftime('%Y%m%d%H%M%S')
         df.to_csv(f"weather_info_{filename}.csv", index=False)
         logger.info(f"{filename} was written as a .csv file")
-
-    def export_df_as_csv(self, df:pd.DataFrame):
-        df.to_csv(f"weather_info_{datetime.today().strftime('%Y%m%d%H%M%S')}.csv", index=False)
          
-    def extract_weather_data(self):
+    def extract_weather_data(self) -> pd.DataFrame:
         start = time.time()
 
         for city, latlon in zip(self.get_cities()["city"], self.get_cities()["latlon"]):
@@ -62,14 +65,17 @@ class GetRealTimeWeather:
             row = self.get_row_values(data=data)
             self.append_row_to_dataframe(df=self.weather, new_row=row)
             logger.info(f"Weather for {city} at latitude-longitude {latlon} was collected")
-            time.sleep(1)
+            time.sleep(0.5)
     
-        self.export_df_as_csv(df=self.weather)
+        self.export_df_as_csv(self.clean_dataframe(df=self.weather))
         end = time.time()
         logger.info(f"Total elapsed time: {round(end - start, ndigits=2)}s")
-        
-        return self.weather
+        return self.clean_dataframe(df=self.weather)
+    
+updated_weather = GetRealTimeWeather()
+data = updated_weather.extract_weather_data()
 
+"""
 class LoadToBQ:
     
     def __init__(self, data:pd.DataFrame):
@@ -91,4 +97,4 @@ if __name__ == '__main__':
     updated_weather = GetRealTimeWeather()
     data = updated_weather.extract_weather_data()
     LoadToBQ(data).load()
-
+"""

@@ -196,6 +196,7 @@ pyrightconfig.json
 data-with-luan-credentials.json
 .gitignore
 .venv
+tempcode.ipynb
 
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
