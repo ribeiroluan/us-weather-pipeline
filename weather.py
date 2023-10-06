@@ -26,7 +26,7 @@ class GetRealTimeWeather:
         
     def get_cities(self) -> list:
         df = pd.read_csv("uscities.csv", sep=";", encoding='latin-1')
-        return df[df["state_id"] == "CA"].drop_duplicates(subset="latlon")
+        return df[df["state_id"] == "HI"].drop_duplicates(subset="latlon")
         
     def get_row_values(self, data:dict) -> dict:
         return {
@@ -62,7 +62,7 @@ class GetRealTimeWeather:
             row = self.get_row_values(data=data)
             self.append_row_to_dataframe(df=self.weather, new_row=row)
             logger.info(f"Weather for {city} at latitude-longitude {latlon} was collected")
-            time.sleep(1)
+            time.sleep(0.5)
     
         self.export_df_as_csv(df=self.weather)
         end = time.time()
